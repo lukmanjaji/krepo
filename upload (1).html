@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Upload Content – KIX Repository | AU-IPED</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--g:#006644;--gm:#008857;--gl:#e8f4ee;--gold:#D4A017;--goldl:#fdf3d7;--char:#1a1a1a;--gray:#5a5a5a;--gl2:#888;--bdr:#d0ddd7;--bg:#f5f8f6;--red:#c62828;--redl:#ffebee}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--char);min-height:100vh}
+.hdr{background:var(--g);color:#fff;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:68px;box-shadow:0 2px 14px rgba(0,0,0,.22)}
+.hdr-l{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:14px;color:var(--g);line-height:1.1;text-align:center;flex-shrink:0}
+.hdr-name{font-size:.8rem;font-weight:500;line-height:1.35;opacity:.9}
+.hdr-name strong{display:block;font-size:.97rem;font-weight:700}
+.hdr-nav a{color:rgba(255,255,255,.78);text-decoration:none;font-size:.8rem;font-weight:500;border:1.5px solid rgba(255,255,255,.35);padding:7px 14px;border-radius:5px}
+.hdr-nav a:hover{background:rgba(255,255,255,.12);color:#fff}
+.bc{max-width:960px;margin:0 auto;padding:16px 2rem 0;font-size:.76rem;color:var(--gl2)}
+.bc a{color:var(--gm);text-decoration:none}
+.wrap{max-width:960px;margin:0 auto;padding:28px 2rem 60px;display:grid;grid-template-columns:1fr 310px;gap:24px}
+@media(max-width:780px){.wrap{grid-template-columns:1fr}}
+.panel{background:#fff;border-radius:12px;border:1.5px solid var(--bdr);padding:26px 28px 30px}
+.p-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--g);margin-bottom:5px}
+.p-sub{font-size:.81rem;color:var(--gray);margin-bottom:22px;line-height:1.6}
+.fg{margin-bottom:18px}
+label.lbl{display:block;font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--g);margin-bottom:5px}
+.req{color:var(--red);margin-left:2px}
+input[type=text],input[type=date],input[type=url],select,textarea{width:100%;padding:10px 13px;border:1.5px solid var(--bdr);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.87rem;color:var(--char);background:var(--bg);outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--gm);background:#fff}
+textarea{resize:vertical;min-height:76px}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;appearance:none}
+.type-toggle{display:flex;gap:8px;flex-wrap:wrap}
+.tbtn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:7px;border:1.5px solid var(--bdr);background:var(--bg);font-size:.8rem;font-weight:500;cursor:pointer;color:var(--gray);transition:all .18s}
+.tbtn:hover{border-color:var(--gm)}
+.tbtn.sel{background:var(--gl);border-color:var(--gm);color:var(--g);font-weight:700}
+.tbtn input{display:none}
+.drop-zone{border:2px dashed var(--bdr);border-radius:10px;padding:30px 18px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);position:relative}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--gm);background:var(--gl)}
+.drop-zone .di{font-size:2rem;margin-bottom:8px}
+.drop-zone p{font-size:.83rem;color:var(--gray);line-height:1.6}
+.drop-zone strong{color:var(--g);cursor:pointer}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-done{display:none;align-items:center;gap:10px;padding:10px 0}
+.fname{font-size:.83rem;font-weight:600;color:var(--g)}
+.fsize{font-size:.73rem;color:var(--gray)}
+.frm{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--red);font-size:1rem}
+/* PHOTO MULTI-UPLOAD */
+.photo-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;min-height:0}
+.photo-chip{display:flex;align-items:center;gap:6px;background:var(--gl);border:1px solid var(--bdr);border-radius:6px;padding:5px 9px;font-size:.75rem;max-width:200px;overflow:hidden}
+.photo-chip img{width:28px;height:22px;object-fit:cover;border-radius:3px;flex-shrink:0}
+.photo-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--g);font-weight:500}
+.photo-chip button{background:none;border:none;cursor:pointer;color:var(--red);font-size:.85rem;padding:0 2px;flex-shrink:0}
+.add-more{display:flex;align-items:center;gap:6px;border:1.5px dashed var(--bdr);border-radius:6px;padding:8px 14px;font-size:.78rem;font-weight:500;color:var(--gray);cursor:pointer;background:none;transition:all .2s;position:relative}
+.add-more:hover{border-color:var(--gm);color:var(--g)}
+.add-more input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.folder-disp{background:var(--bg);border:1.5px solid var(--bdr);border-radius:7px;padding:9px 13px;font-family:'DM Mono',monospace;font-size:.79rem;color:var(--g);letter-spacing:.02em}
+.url-sec{display:none}
+.url-sec.vis{display:block}
+.file-sec.hid{display:none}
+.album-sec{display:none}
+.album-sec.vis{display:block}
+.btn-submit{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:4px}
+.btn-submit:hover{background:var(--gm)}
+.sidebar{display:flex;flex-direction:column;gap:20px}
+.info-panel{background:var(--goldl);border-radius:12px;border:1.5px solid #e8d080;padding:18px 20px}
+.info-t{font-size:.83rem;font-weight:700;color:#7a5c00;margin-bottom:10px}
+.steps{list-style:none;display:flex;flex-direction:column;gap:8px}
+.steps li{font-size:.76rem;color:#5a4200;line-height:1.5;display:flex;gap:8px}
+.sn{width:17px;height:17px;border-radius:50%;background:var(--gold);color:#fff;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.folder-tree{background:#fff;border-radius:12px;border:1.5px solid var(--bdr);padding:16px 18px}
+.ft-title{font-size:.83rem;font-weight:700;color:var(--g);margin-bottom:10px}
+.tree{font-family:'DM Mono',monospace;font-size:.73rem;color:var(--gray);line-height:1.9}
+.tree .fd{color:var(--g);font-weight:600}
+.tree .fi{color:#aaa}
+.db-panel{background:#fff;border-radius:12px;border:1.5px solid var(--bdr);overflow:hidden}
+.db-hdr{background:var(--g);color:#fff;padding:13px 17px;display:flex;align-items:center;justify-content:space-between}
+.db-cnt{font-size:.73rem;background:rgba(255,255,255,.18);padding:3px 9px;border-radius:10px}
+.db-list{max-height:320px;overflow-y:auto}
+.db-item{padding:10px 16px;border-bottom:1px solid var(--bdr);display:flex;gap:9px;align-items:flex-start;font-size:.79rem}
+.db-item:last-child{border-bottom:none}
+.db-item:hover{background:var(--gl)}
+.db-badge{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:4px;background:var(--gl);color:var(--g);flex-shrink:0;margin-top:2px}
+.db-ttl{font-weight:500;color:var(--char);line-height:1.4;flex:1}
+.db-dt{font-size:.68rem;color:var(--gl2);margin-top:2px}
+.db-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:.95rem;padding:0 2px;opacity:.6}
+.db-del:hover{opacity:1}
+.db-empty{padding:28px 16px;text-align:center;font-size:.8rem;color:var(--gl2)}
+.db-foot{padding:10px 16px;border-top:1px solid var(--bdr);display:flex;gap:8px}
+.btn-exp,.btn-cpy{flex:1;padding:9px;font-size:.76rem;font-weight:600;border-radius:6px;cursor:pointer;border:1.5px solid;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-exp{background:var(--g);color:#fff;border-color:var(--g)}
+.btn-exp:hover{background:var(--gm);border-color:var(--gm)}
+.btn-cpy{background:#fff;color:var(--g);border-color:var(--bdr)}
+.btn-cpy:hover{border-color:var(--gm)}
+.toast{position:fixed;bottom:26px;right:26px;background:var(--g);color:#fff;padding:13px 20px;border-radius:8px;font-size:.86rem;font-weight:500;box-shadow:0 6px 24px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);max-width:320px;z-index:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{background:var(--red)}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo">AU<br>IPED</div>
+    <div class="hdr-name"><strong>KIX Africa 19 Repository</strong>Admin · Content Upload</div>
+  </div>
+  <nav class="hdr-nav"><a href="index.html">← View Repository</a></nav>
+</header>
+<div class="bc"><a href="index.html">Repository</a> › Upload Content</div>
+
+<div class="wrap">
+  <div>
+    <div class="panel">
+      <div class="p-title">Add New Item</div>
+      <div class="p-sub">Fill in the details and upload your file. Download the updated <code>repository.txt</code> when done and replace the one on your server.</div>
+      <div id="loadStatus" style="font-size:.78rem;padding:7px 12px;border-radius:6px;background:#f0f0f0;color:#888;margin-bottom:18px">Loading existing entries from repository.txt…</div>
+
+      <div class="fg">
+        <label class="lbl">Content Type <span class="req">*</span></label>
+        <div class="type-toggle" id="typeToggle">
+          <label class="tbtn sel"><input type="radio" name="t" value="reports" checked/>📄 Report</label>
+          <label class="tbtn"><input type="radio" name="t" value="research"/>🔬 Research</label>
+          <label class="tbtn"><input type="radio" name="t" value="policy"/>📋 Policy Brief</label>
+          <label class="tbtn"><input type="radio" name="t" value="photos"/>📷 Photo Album</label>
+          <label class="tbtn"><input type="radio" name="t" value="videos"/>🎬 Video</label>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Title <span class="req">*</span></label>
+        <input type="text" id="itemTitle" placeholder="e.g. KIX Annual Progress Report 2024"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" class="fg">
+        <div>
+          <label class="lbl">Date <span class="req">*</span></label>
+          <input type="date" id="itemDate"/>
+        </div>
+        <div id="locGroup">
+          <label class="lbl">Location</label>
+          <input type="text" id="itemLocation" placeholder="e.g. Addis Ababa, Ethiopia"/>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Description</label>
+        <textarea id="itemDesc" placeholder="Brief description shown in the repository listing…"></textarea>
+      </div>
+
+      <!-- FILE (PDF / single) -->
+      <div class="file-sec" id="fileSec">
+        <div class="fg">
+          <label class="lbl">File Upload</label>
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept=".pdf,.doc,.docx"/>
+            <div class="di">📄</div>
+            <p>Drag &amp; drop your file here<br>or <strong>click to browse</strong></p>
+            <p style="font-size:.71rem;margin-top:5px;color:#bbb">PDF, DOC, DOCX</p>
+          </div>
+          <div class="file-done" id="fileDone">
+            <span style="font-size:1.3rem">📎</span>
+            <div><div class="fname" id="fName">—</div><div class="fsize" id="fSize">—</div></div>
+            <button class="frm" id="fRm">✕</button>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="lbl">Destination Folder</label>
+          <div class="folder-disp" id="folderDisp">docs/reports/</div>
+        </div>
+      </div>
+
+      <!-- ALBUM (multi-photo upload) -->
+      <div class="album-sec" id="albumSec">
+        <div class="fg">
+          <label class="lbl">Album Cover Photo</label>
+          <div class="drop-zone" id="coverZone" style="padding:20px 18px">
+            <input type="file" id="coverInput" accept=".jpg,.jpeg,.png,.webp,.gif"/>
+            <div class="di">🖼️</div>
+            <p>Upload cover photo<br><strong>click to browse</strong></p>
+          </div>
+          <div class="file-done" id="coverDone">
+            <span style="font-size:1.3rem">🖼️</span>
+            <div><div class="fname" id="coverName">—</div></div>
+            <button class="frm" id="coverRm">✕</button>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="lbl">Album Photos <span style="font-size:.7rem;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray)">(add multiple)</span></label>
+          <div id="photoList" class="photo-list"></div>
+          <label class="add-more" id="addMoreBtn" style="margin-top:8px">
+            <input type="file" id="photosInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif"/>
+            + Add Photos
+          </label>
+        </div>
+        <div class="fg">
+          <label class="lbl">Album Folder Name</label>
+          <input type="text" id="albumFolder" placeholder="e.g. symposium-2025 (no spaces)"/>
+          <div style="font-size:.72rem;color:var(--gray);margin-top:5px">Photos will go in <code>photos/<span id="folderPreview">your-folder-name</span>/</code></div>
+        </div>
+      </div>
+
+      <!-- VIDEO URL -->
+      <div class="url-sec" id="urlSec">
+        <div class="fg">
+          <label class="lbl">YouTube URL <span class="req">*</span></label>
+          <input type="url" id="itemUrl" placeholder="https://www.youtube.com/watch?v=…"/>
+        </div>
+        <div class="fg">
+          <label class="lbl">Custom Thumbnail URL <span style="font-size:.7rem;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray)">(optional — auto from YouTube)</span></label>
+          <input type="url" id="itemThumb" placeholder="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg"/>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="handleSubmit()">＋ Add to Repository</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="info-panel">
+      <div class="info-t">💡 How this works</div>
+      <ol class="steps">
+        <li><span class="sn">1</span>The page automatically loads your live <code>repository.txt</code> — existing entries appear in the list on the right.</li>
+        <li><span class="sn">2</span>Fill in the form and click <strong>Add to Repository</strong>. New entry is appended to the existing ones.</li>
+        <li><span class="sn">3</span>Repeat for all new items.</li>
+        <li><span class="sn">4</span>Click <strong>Download .txt</strong> — this contains <em>all</em> entries (old + new).</li>
+        <li><span class="sn">5</span>Replace <code>repository.txt</code> on your server with the downloaded file. Also move uploaded media files into the correct folders.</li>
+      </ol>
+    </div>
+
+    <div class="folder-tree">
+      <div class="ft-title">📁 Folder Structure</div>
+      <div class="tree">
+        <div class="fd">📂 repository/</div>
+        <div style="padding-left:14px">
+          <div class="fd">📂 data/</div>
+          <div style="padding-left:14px"><div class="fi">📄 repository.txt</div></div>
+          <div class="fd">📂 docs/</div>
+          <div style="padding-left:14px">
+            <div class="fd">📂 reports/</div>
+            <div class="fd">📂 research/</div>
+            <div class="fd">📂 policy/</div>
+          </div>
+          <div class="fd">📂 photos/</div>
+          <div style="padding-left:14px">
+            <div class="fi">📂 symposium-2025/</div>
+            <div class="fi">📂 dakar-meeting/</div>
+          </div>
+          <div class="fd">📂 videos/</div>
+          <div class="fi">📄 index.html</div>
+          <div class="fi">📄 reports.html</div>
+          <div class="fi">📄 research.html</div>
+          <div class="fi">📄 policy.html</div>
+          <div class="fi">📄 photos.html</div>
+          <div class="fi">📄 videos.html</div>
+          <div class="fi">📄 upload.html</div>
+          <div class="fi">📄 shared.js</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="db-panel">
+      <div class="db-hdr">
+        <span style="font-weight:700;font-size:.88rem">📋 Current Entries</span>
+        <span class="db-cnt" id="dbCnt">0 items</span>
+      </div>
+      <div class="db-list" id="dbList"><div class="db-empty">No entries yet.</div></div>
+      <div class="db-foot">
+        <button class="btn-exp" onclick="exportTxt()">⬇ Download .txt</button>
+        <button class="btn-cpy" onclick="copyTxt()">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let entries = [];
+
+/* ── Parse repository.txt text into entry objects ── */
+function parseTxt(text) {
+  const items = [];
+  text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach(block => {
+    const obj = {};
+    block.split('\n').forEach(line => {
+      const idx = line.indexOf(':');
+      if (idx === -1) return;
+      const key = line.slice(0, idx).trim().toLowerCase();
+      const val = line.slice(idx + 1).trim();
+      if (key === 'photo') { obj.photos = obj.photos || []; obj.photos.push(val); }
+      else { obj[key] = val; }
+    });
+    if (obj.title && obj.type) items.push(obj);
+  });
+  return items;
+}
+
+/* ── Serialise one entry to a text block ── */
+function entryToBlock(e) {
+  const lines = [`TITLE: ${e.title}`, `TYPE: ${e.type}`, `DATE: ${e.date || ''}`];
+  if (e.location)  lines.push(`LOCATION: ${e.location}`);
+  if (e.url)       lines.push(`URL: ${e.url}`);
+  if (e.file)      lines.push(`FILE: ${e.file}`);
+  if (e.albumcover)lines.push(`ALBUMCOVER: ${e.albumcover}`);
+  if (e.photos && e.photos.length) e.photos.forEach(p => lines.push(`PHOTO: ${p}`));
+  if (e.thumb)     lines.push(`THUMB: ${e.thumb}`);
+  if (e.desc)      lines.push(`DESC: ${e.desc}`);
+  return lines.join('\n');
+}
+
+function toTxt() { return entries.map(entryToBlock).join('\n\n'); }
+
+/* ── On page load: fetch live repository.txt → populate entries ── */
+async function loadLive() {
+  const el = document.getElementById('loadStatus');
+  el.textContent = 'Loading repository.txt…';
+  el.style.background = '#f0f0f0';
+  el.style.color = '#888';
+
+  for (const path of ['repository.txt', 'data/repository.txt']) {
+    try {
+      const res = await fetch(path + '?t=' + Date.now());
+      if (!res.ok) continue;
+      const txt = await res.text();
+      if (!txt.trim()) continue;
+      entries = parseTxt(txt);
+      el.textContent = '✓ Loaded ' + entries.length + ' existing entr' + (entries.length === 1 ? 'y' : 'ies') + ' from ' + path;
+      el.style.background = '#e8f4ee';
+      el.style.color = '#2e7d32';
+      renderDB();
+      return;
+    } catch (_) { /* try next path */ }
+  }
+
+  entries = [];
+  el.textContent = '⚠ repository.txt not found at root or data/ — starting fresh.';
+  el.style.background = '#fff3e0';
+  el.style.color = '#c62828';
+  renderDB();
+}
+
+document.getElementById('itemDate').valueAsDate = new Date();
+
+const folderMap = {reports:'docs/reports/',research:'docs/research/',policy:'docs/policy/',photos:'photos/',videos:'videos/'};
+const acceptMap = {reports:'.pdf,.doc,.docx',research:'.pdf,.doc,.docx',policy:'.pdf,.doc,.docx',photos:'.jpg,.jpeg,.png,.webp,.gif',videos:'.mp4,.mov,.webm'};
+let selType = 'reports', selFile = null, coverFile = null, photoFiles = [];
+
+document.querySelectorAll('.tbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selType = btn.querySelector('input').value;
+    const isVideo = selType === 'videos';
+    const isAlbum = selType === 'photos';
+    document.getElementById('urlSec').classList.toggle('vis', isVideo);
+    document.getElementById('fileSec').classList.toggle('hid', isVideo || isAlbum);
+    document.getElementById('albumSec').classList.toggle('vis', isAlbum);
+    if (!isAlbum && !isVideo) {
+      document.getElementById('folderDisp').textContent = folderMap[selType];
+      document.getElementById('fileInput').accept = acceptMap[selType];
+    }
+  });
+});
+
+/* ── Single file drop ── */
+const dz = document.getElementById('dropZone');
+const fi = document.getElementById('fileInput');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]); });
+fi.addEventListener('change', () => { if (fi.files.length) setFile(fi.files[0]); });
+document.getElementById('fRm').addEventListener('click', () => { selFile = null; fi.value = ''; dz.style.display = ''; document.getElementById('fileDone').style.display = 'none'; });
+function setFile(f) { selFile = f; document.getElementById('fName').textContent = f.name; document.getElementById('fSize').textContent = fmt(f.size); dz.style.display = 'none'; document.getElementById('fileDone').style.display = 'flex'; }
+function fmt(b) { return b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(1)+' MB'; }
+
+/* ── Cover photo ── */
+const cz = document.getElementById('coverZone');
+const ci = document.getElementById('coverInput');
+ci.addEventListener('change', () => { if (ci.files.length) setCover(ci.files[0]); });
+document.getElementById('coverRm').addEventListener('click', () => { coverFile = null; ci.value = ''; cz.style.display = ''; document.getElementById('coverDone').style.display = 'none'; });
+function setCover(f) { coverFile = f; document.getElementById('coverName').textContent = f.name; cz.style.display = 'none'; document.getElementById('coverDone').style.display = 'flex'; }
+
+/* ── Multi photos ── */
+document.getElementById('photosInput').addEventListener('change', function() {
+  Array.from(this.files).forEach(f => { if (!photoFiles.find(x => x.name === f.name)) photoFiles.push(f); });
+  renderPhotoChips();
+  this.value = '';
+});
+function renderPhotoChips() {
+  document.getElementById('photoList').innerHTML = photoFiles.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<div class="photo-chip"><img src="${url}" alt=""/><span>${f.name}</span><button onclick="removePhoto(${i})">✕</button></div>`;
+  }).join('');
+}
+function removePhoto(i) { photoFiles.splice(i, 1); renderPhotoChips(); }
+
+document.getElementById('albumFolder').addEventListener('input', function() {
+  document.getElementById('folderPreview').textContent = this.value || 'your-folder-name';
+});
+
+/* ── Submit ── */
+function handleSubmit() {
+  const title   = document.getElementById('itemTitle').value.trim();
+  const date    = document.getElementById('itemDate').value;
+  const desc    = document.getElementById('itemDesc').value.trim();
+  const loc     = document.getElementById('itemLocation').value.trim();
+  const url     = document.getElementById('itemUrl').value.trim();
+  const thumb   = document.getElementById('itemThumb').value.trim();
+  const isVideo = selType === 'videos';
+  const isAlbum = selType === 'photos';
+
+  if (!title) { showToast('Please enter a title.', true); return; }
+  if (!date)  { showToast('Please select a date.', true); return; }
+  if (isVideo && !url) { showToast('Please paste a YouTube URL.', true); return; }
+
+  let filePath = '';
+  if (!isVideo && !isAlbum && selFile) filePath = folderMap[selType] + selFile.name;
+
+  let ytThumb = thumb;
+  if (isVideo && !ytThumb && url) {
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([A-Za-z0-9_-]{11})/);
+    if (m) ytThumb = `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
+  }
+
+  const albumFolderName = document.getElementById('albumFolder').value.trim() || 'album-' + date.replace(/-/g,'');
+  const albumPath = `photos/${albumFolderName}/`;
+
+  const entry = { title, type: selType, date, desc };
+  if (loc) entry.location = loc;
+  if (isVideo) { entry.url = url; if (ytThumb) entry.thumb = ytThumb; }
+  else if (isAlbum) {
+    if (coverFile) entry.albumcover = albumPath + coverFile.name;
+    entry.photos = photoFiles.map(f => albumPath + f.name);
+  } else {
+    entry.file = filePath;
+  }
+
+  entries.push(entry);
+  renderDB();
+  resetForm();
+
+  /* Auto-trigger download so the file is saved immediately */
+  triggerDownload();
+  showToast(`"${title.slice(0,38)}${title.length>38?'…':''}" added — repository.txt downloaded. Replace the file on your server.`);
+}
+
+/* ── Auto-download on every addition ── */
+function triggerDownload() {
+  const blob = new Blob([toTxt()], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'repository.txt';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function resetForm() {
+  document.getElementById('itemTitle').value = '';
+  document.getElementById('itemDate').valueAsDate = new Date();
+  document.getElementById('itemDesc').value = '';
+  document.getElementById('itemLocation').value = '';
+  document.getElementById('itemUrl').value = '';
+  document.getElementById('itemThumb').value = '';
+  document.getElementById('albumFolder').value = '';
+  document.getElementById('folderPreview').textContent = 'your-folder-name';
+  selFile = null; coverFile = null; photoFiles = [];
+  document.getElementById('fileInput').value = '';
+  document.getElementById('coverInput').value = '';
+  document.getElementById('photosInput').value = '';
+  document.getElementById('dropZone').style.display = '';
+  document.getElementById('fileDone').style.display = 'none';
+  document.getElementById('coverZone').style.display = '';
+  document.getElementById('coverDone').style.display = 'none';
+  document.getElementById('photoList').innerHTML = '';
+}
+
+/* ── DB sidebar ── */
+const tL = {reports:'Report',research:'Research',policy:'Policy',photos:'Album',videos:'Video'};
+function renderDB() {
+  const list = document.getElementById('dbList');
+  document.getElementById('dbCnt').textContent = entries.length + ' item' + (entries.length !== 1 ? 's' : '');
+  if (!entries.length) { list.innerHTML = '<div class="db-empty">No entries yet.</div>'; return; }
+  list.innerHTML = [...entries].reverse().map((e, ri) => {
+    const i = entries.length - 1 - ri;
+    return `<div class="db-item">
+      <span class="db-badge">${tL[e.type] || e.type}</span>
+      <div style="flex:1;min-width:0"><div class="db-ttl">${e.title}</div><div class="db-dt">${e.date || ''}</div></div>
+      <button class="db-del" onclick="delEntry(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+function delEntry(i) {
+  if (!confirm(`Remove "${entries[i].title}"?`)) return;
+  entries.splice(i, 1);
+  renderDB();
+  triggerDownload();
+  showToast('Entry removed — repository.txt downloaded. Replace the file on your server.');
+}
+
+/* ── Manual export buttons ── */
+function exportTxt() {
+  if (!entries.length) { showToast('No entries to export.', true); return; }
+  triggerDownload();
+  showToast('Downloaded repository.txt with ' + entries.length + ' entr' + (entries.length === 1 ? 'y' : 'ies') + ' — replace the one on your server.');
+}
+function copyTxt() {
+  if (!entries.length) { showToast('No entries to copy.', true); return; }
+  navigator.clipboard.writeText(toTxt()).then(() => showToast('Copied ' + entries.length + ' entries to clipboard.'));
+}
+
+function showToast(msg, err = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  setTimeout(() => t.className = 'toast', 4500);
+}
+
+/* ── Init ── */
+loadLive();
+</script>
+</body>

@@ -1,0 +1,199 @@
+TITLE: KIX Africa 19 Annual Progress Report 2024
+TYPE: reports
+DATE: 2025-01-15
+FILE: docs/reports/annual-report-2024.pdf
+DESC: Comprehensive annual report covering all KIX project activities, milestones, and outcomes in 2024.
+
+TITLE: KIX Africa 19 Annual Progress Report 2023
+TYPE: reports
+DATE: 2024-01-15
+FILE: docs/reports/annual-report-2023.pdf
+DESC: Annual report covering all KIX project activities and milestones in 2023.
+
+TITLE: Mid-Term Review Report – KIX Africa 19 Hub
+TYPE: reports
+DATE: 2023-07-01
+FILE: docs/reports/midterm-review-2023.pdf
+DESC: Mid-term evaluation assessing the implementation and impact of the KIX Africa 19 hub activities.
+
+TITLE: EMIS Strengthening Mission Report – South Sudan
+TYPE: reports
+DATE: 2026-03-13
+FILE: docs/reports/south-sudan-emis-2026.pdf
+DESC: Technical mission report on Education Management Information Systems strengthening in South Sudan.
+
+TITLE: KIX Hub Coordination Report Q3 2025
+TYPE: reports
+DATE: 2025-09-30
+FILE: docs/reports/hub-coordination-q3-2025.pdf
+DESC: Quarterly coordination and operations report for Q3 2025.
+
+TITLE: KIX Annual Progress Report 2022
+TYPE: reports
+DATE: 2023-02-10
+FILE: docs/reports/annual-report-2022.pdf
+DESC: Annual report for KIX project activities and deliverables in 2022.
+
+TITLE: Inclusive Education in Sub-Saharan Africa: Evidence Review
+TYPE: research
+DATE: 2023-09-20
+FILE: docs/research/inclusive-edu-review.pdf
+DESC: Systematic review of evidence on inclusive education practices across GPE partner countries.
+
+TITLE: Learning Assessment Frameworks: Continental Analysis
+TYPE: research
+DATE: 2024-05-10
+FILE: docs/research/learning-assessments.pdf
+DESC: Analysis of harmonised learning assessment frameworks across Africa under the KIX knowledge agenda.
+
+TITLE: Early Childhood Education Data Systems Study
+TYPE: research
+DATE: 2023-11-05
+FILE: docs/research/ece-data-systems.pdf
+DESC: Research on data collection and management systems for ECE programmes in 19 GPE partner countries.
+
+TITLE: Teacher Professional Development in Rural Africa
+TYPE: research
+DATE: 2024-08-22
+FILE: docs/research/tpd-rural.pdf
+DESC: Research on effective teacher professional development strategies in rural African contexts.
+
+TITLE: Digital Learning Tools in Low-Connectivity Environments
+TYPE: research
+DATE: 2025-03-18
+FILE: docs/research/digital-learning-offline.pdf
+DESC: Study on adoption and impact of digital learning tools in low-bandwidth and offline settings.
+
+TITLE: Girls Education Barriers: A Multi-Country Analysis
+TYPE: research
+DATE: 2024-11-30
+FILE: docs/research/girls-edu-barriers.pdf
+DESC: Comparative analysis of barriers to girls education across KIX Africa 19 hub countries.
+
+TITLE: Policy Brief: Harmonising Learning Assessments in Africa
+TYPE: policy
+DATE: 2025-07-31
+FILE: docs/policy/learning-assessments-brief.pdf
+DESC: Key policy recommendations for continental harmonisation of learning assessment frameworks.
+
+TITLE: Policy Brief: Financing Sustainable EMIS
+TYPE: policy
+DATE: 2025-10-01
+FILE: docs/policy/emis-financing-brief.pdf
+DESC: Policy options and recommendations for building financially sustainable Education Management Information Systems.
+
+TITLE: Policy Recommendations – Resilient Education Systems
+TYPE: policy
+DATE: 2024-09-15
+FILE: docs/policy/resilient-systems-brief.pdf
+DESC: Post-symposium policy recommendations for building resilient and inclusive education systems in Africa.
+
+TITLE: Policy Brief: Accelerating SDG 4 Progress in Africa
+TYPE: policy
+DATE: 2024-03-20
+FILE: docs/policy/sdg4-brief.pdf
+DESC: Actionable policy options for accelerating progress towards SDG 4 across GPE partner countries.
+
+TITLE: Policy Brief: School Leadership and Learning Outcomes
+TYPE: policy
+DATE: 2025-04-10
+FILE: docs/policy/school-leadership-brief.pdf
+DESC: Evidence-based recommendations on the role of school leadership in improving learning outcomes.
+
+TITLE: 4th KIX Continental Symposium 2025
+TYPE: photos
+DATE: 2025-11-28
+LOCATION: Addis Ababa, Ethiopia
+ALBUMCOVER: photos/symposium4/cover.jpg
+PHOTO: photos/symposium4/01.jpg
+PHOTO: photos/symposium4/02.jpg
+PHOTO: photos/symposium4/03.jpg
+PHOTO: photos/symposium4/04.jpg
+PHOTO: photos/symposium4/05.jpg
+PHOTO: photos/symposium4/06.jpg
+DESC: Photos from the 4th Edition of the KIX Continental Symposium on Research and Innovation in Education in Africa.
+
+TITLE: KIX Knowledge Café 3 – EMIS Sustainability
+TYPE: photos
+DATE: 2025-10-01
+LOCATION: Online / Hybrid
+ALBUMCOVER: photos/cafe3/cover.jpg
+PHOTO: photos/cafe3/01.jpg
+PHOTO: photos/cafe3/02.jpg
+PHOTO: photos/cafe3/03.jpg
+PHOTO: photos/cafe3/04.jpg
+DESC: Photos from the 3rd KIX Knowledge Café on Building Financially Sustainable EMIS for Africa's Future.
+
+TITLE: KIX Focal Points Meeting – Dakar 2025
+TYPE: photos
+DATE: 2025-12-11
+LOCATION: Dakar, Senegal
+ALBUMCOVER: photos/dakar/cover.jpg
+PHOTO: photos/dakar/01.jpg
+PHOTO: photos/dakar/02.jpg
+PHOTO: photos/dakar/03.jpg
+PHOTO: photos/dakar/04.jpg
+PHOTO: photos/dakar/05.jpg
+DESC: Community of Practice focal points meeting in Dakar, Senegal.
+
+TITLE: South Sudan EMIS Technical Mission 2026
+TYPE: photos
+DATE: 2026-03-13
+LOCATION: Juba, South Sudan
+ALBUMCOVER: photos/southsudan/cover.jpg
+PHOTO: photos/southsudan/01.jpg
+PHOTO: photos/southsudan/02.jpg
+PHOTO: photos/southsudan/03.jpg
+DESC: Technical mission to strengthen Education Management Information Systems in South Sudan.
+
+TITLE: AU-IPED DHIS2 Conference Side Event
+TYPE: photos
+DATE: 2025-06-21
+LOCATION: Oslo, Norway
+ALBUMCOVER: photos/dhis2/cover.jpg
+PHOTO: photos/dhis2/01.jpg
+PHOTO: photos/dhis2/02.jpg
+PHOTO: photos/dhis2/03.jpg
+DESC: AU-IPED engagement at the DHIS2 Annual Conference in Oslo, Norway.
+
+TITLE: GPE-KIX Africa 19 – Project Overview
+TYPE: videos
+DATE: 2023-06-01
+URL: https://www.youtube.com/watch?v=REPLACE_WITH_REAL_ID
+THUMB: https://img.youtube.com/vi/REPLACE_WITH_REAL_ID/hqdefault.jpg
+DESC: Introduction to the KIX Africa 19 project goals, structure, and 19 partner countries.
+
+TITLE: 4th KIX Symposium – Opening Ceremony
+TYPE: videos
+DATE: 2025-11-28
+URL: https://www.youtube.com/watch?v=REPLACE_WITH_REAL_ID
+THUMB: https://img.youtube.com/vi/REPLACE_WITH_REAL_ID/hqdefault.jpg
+DESC: Full recording of the opening ceremony of the 4th KIX Continental Symposium 2025.
+
+TITLE: Knowledge Café 3: Building Sustainable EMIS
+TYPE: videos
+DATE: 2025-10-01
+URL: https://www.youtube.com/watch?v=REPLACE_WITH_REAL_ID
+THUMB: https://img.youtube.com/vi/REPLACE_WITH_REAL_ID/hqdefault.jpg
+DESC: Recorded session of the 3rd KIX Knowledge Café on EMIS sustainability.
+
+TITLE: KIX Africa 19 Hub – Impact Stories
+TYPE: videos
+DATE: 2024-06-15
+URL: https://www.youtube.com/watch?v=REPLACE_WITH_REAL_ID
+THUMB: https://img.youtube.com/vi/REPLACE_WITH_REAL_ID/hqdefault.jpg
+DESC: Short documentary featuring impact stories from KIX hub countries.
+
+TITLE: 2nd KIX Knowledge Café – Findings and Insights
+TYPE: videos
+DATE: 2025-04-22
+URL: https://www.youtube.com/watch?v=REPLACE_WITH_REAL_ID
+THUMB: https://img.youtube.com/vi/REPLACE_WITH_REAL_ID/hqdefault.jpg
+DESC: Recorded highlights from the 2nd KIX Knowledge Café session.
+
+TITLE: KIX Focal Points Reflections – Dakar Meeting
+TYPE: videos
+DATE: 2025-12-11
+URL: https://www.youtube.com/watch?v=REPLACE_WITH_REAL_ID
+THUMB: https://img.youtube.com/vi/REPLACE_WITH_REAL_ID/hqdefault.jpg
+DESC: Testimonials and reflections from focal points following the Dakar Community of Practice meeting.

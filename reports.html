@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reports – KIX Repository | AU-IPED</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--g:#006644;--gm:#008857;--gl:#e8f4ee;--gold:#D4A017;--char:#1a1a1a;--gray:#5a5a5a;--bdr:#d0ddd7;--bg:#f5f8f6}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--char);min-height:100vh}
+.hdr{background:var(--g);color:#fff;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:68px;position:sticky;top:0;z-index:100;box-shadow:0 2px 14px rgba(0,0,0,.22)}
+.hdr-l{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:14px;color:var(--g);line-height:1.1;text-align:center;flex-shrink:0}
+.hdr-name{font-size:.8rem;font-weight:500;line-height:1.35;opacity:.9}
+.hdr-name strong{display:block;font-size:.97rem;font-weight:700}
+.hdr-nav{display:flex;gap:1.2rem;align-items:center}
+.hdr-nav a{color:rgba(255,255,255,.78);text-decoration:none;font-size:.8rem;font-weight:500}
+.hdr-nav a:hover{color:var(--gold)}
+.btn-upload{background:var(--gold);color:#1a1a1a;padding:7px 15px;border-radius:4px;font-size:.8rem;font-weight:700;text-decoration:none}
+.page-hero{background:linear-gradient(135deg,var(--g) 0%,#004d32 100%);color:#fff;padding:40px 2rem 36px}
+.page-hero-in{max-width:1060px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.breadcrumb{font-size:.75rem;opacity:.65;margin-bottom:10px}
+.breadcrumb a{color:rgba(255,255,255,.7);text-decoration:none}
+.breadcrumb a:hover{color:var(--gold)}
+.page-hero h1{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;display:flex;align-items:center;gap:12px}
+.page-hero p{font-size:.88rem;opacity:.78;margin-top:8px;max-width:500px;line-height:1.6}
+.hero-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:14px 22px;border-radius:10px;text-align:center}
+.hero-badge .n{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)}
+.hero-badge .l{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:3px}
+.toolbar{max-width:1060px;margin:0 auto;padding:22px 2rem 0;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.search-wrap{flex:1 1 240px;position:relative}
+.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#888;pointer-events:none}
+.search-wrap input{width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--bdr);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.87rem;background:#fff;outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--gm)}
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.ftab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--bdr);background:#fff;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .18s;color:var(--gray)}
+.ftab:hover,.ftab.active{background:var(--g);color:#fff;border-color:var(--g)}
+.sort-sel{padding:9px 14px;border:1.5px solid var(--bdr);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--gray);background:#fff;cursor:pointer;outline:none}
+.main{max-width:1060px;margin:0 auto;padding:24px 2rem 60px}
+.results-info{font-size:.8rem;color:var(--gray);margin-bottom:16px}
+.doc-list{display:flex;flex-direction:column;gap:12px}
+.doc-card{background:#fff;border-radius:10px;border:1.5px solid var(--bdr);padding:18px 20px;display:flex;gap:16px;align-items:flex-start;text-decoration:none;color:inherit;transition:border-color .2s,box-shadow .2s}
+.doc-card:hover{border-color:var(--gm);box-shadow:0 4px 18px rgba(0,102,68,.1)}
+.doc-pdf{width:44px;height:52px;border-radius:7px;background:#c62828;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#fff;font-family:'DM Mono',monospace;flex-shrink:0;letter-spacing:.04em}
+.doc-body{flex:1;min-width:0}
+.doc-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.doc-tag{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gm);background:var(--gl);padding:3px 8px;border-radius:4px}
+.doc-year{font-size:.72rem;color:#888}
+.doc-title{font-size:.95rem;font-weight:600;line-height:1.4;margin-bottom:6px}
+.doc-desc{font-size:.8rem;color:var(--gray);line-height:1.6}
+.doc-dl{margin-left:auto;flex-shrink:0;width:34px;height:34px;border-radius:7px;background:var(--gl);display:flex;align-items:center;justify-content:center;color:var(--g);transition:background .2s;align-self:center}
+.doc-card:hover .doc-dl{background:var(--g);color:#fff}
+.pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:32px;flex-wrap:wrap}
+.pg-btn{width:36px;height:36px;border-radius:7px;border:1.5px solid var(--bdr);background:#fff;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:500;cursor:pointer;color:var(--gray);transition:all .18s}
+.pg-btn:hover{border-color:var(--gm);color:var(--g)}
+.pg-btn.active{background:var(--g);color:#fff;border-color:var(--g)}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed}
+.pg-info{font-size:.8rem;color:var(--gray);padding:0 8px}
+.empty{text-align:center;padding:60px 20px;color:var(--gray)}
+footer{background:var(--g);color:rgba(255,255,255,.7);text-align:center;padding:24px 1rem;font-size:.76rem;line-height:1.9}
+footer strong{color:#fff}
+footer a{color:var(--gold);text-decoration:none}
+@media(max-width:600px){.page-hero-in{flex-direction:column}.hero-badge{display:none}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo">AU<br>IPED</div>
+    <div class="hdr-name"><strong>KIX Africa 19 Repository</strong>Pan-African Institute for Education for Development</div>
+  </div>
+  <nav class="hdr-nav">
+    <a href="index.html">← Home</a>
+    <a href="upload.html" class="btn-upload">+ Upload</a>
+  </nav>
+</header>
+
+<div class="page-hero">
+  <div class="page-hero-in">
+    <div>
+      <div class="breadcrumb"><a href="index.html">Repository</a> › Reports</div>
+      <h1><span>📄</span> Reports</h1>
+      <p>Annual progress reports, mission reports, mid-term reviews, and operational documents produced by the KIX Africa 19 hub.</p>
+    </div>
+    <div class="hero-badge"><div class="n" id="totalCount">—</div><div class="l">Documents</div></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Search by title, year, keyword…"/>
+  </div>
+  <div class="filter-tabs">
+    <button class="ftab active" data-y="all">All Years</button>
+  </div>
+  <select class="sort-sel" id="sortSel">
+    <option value="date-desc">Newest First</option>
+    <option value="date-asc">Oldest First</option>
+    <option value="az">A → Z</option>
+  </select>
+</div>
+
+<div class="main">
+  <div class="results-info" id="resultsInfo"></div>
+  <div class="doc-list" id="docList"><div style="padding:20px;color:#888">Loading…</div></div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<footer>
+  <strong>AU-IPED KIX Africa 19 Digital Repository</strong> &nbsp;|&nbsp; <a href="index.html">Home</a> &nbsp;|&nbsp; <a href="https://iped.africa" target="_blank">iped.africa</a>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+const PER_PAGE = 10;
+let allItems = [], filtered = [], page = 1, activeYear = 'all', search = '', sort = 'date-desc';
+
+function buildYearTabs(items) {
+  const years = [...new Set(items.map(i => formatYear(i.date)).filter(Boolean))].sort((a,b)=>b-a);
+  const cont = document.querySelector('.filter-tabs');
+  years.forEach(y => {
+    const btn = document.createElement('button');
+    btn.className = 'ftab'; btn.dataset.y = y; btn.textContent = y;
+    btn.addEventListener('click', () => { activeYear = y; page = 1; applyFilters(); setActiveYear(); });
+    cont.appendChild(btn);
+  });
+}
+function setActiveYear() {
+  document.querySelectorAll('.ftab').forEach(b => b.classList.toggle('active', b.dataset.y === activeYear));
+}
+function applyFilters() {
+  let items = [...allItems];
+  if (activeYear !== 'all') items = items.filter(i => formatYear(i.date) == activeYear);
+  if (search) { const q = search.toLowerCase(); items = items.filter(i => i.title.toLowerCase().includes(q)||(i.desc||'').toLowerCase().includes(q)); }
+  if (sort === 'date-desc') items.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if (sort === 'date-asc')  items.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if (sort === 'az')        items.sort((a,b)=>a.title.localeCompare(b.title));
+  filtered = items;
+  render();
+}
+function render() {
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / PER_PAGE));
+  page = Math.min(page, pages);
+  const slice = filtered.slice((page-1)*PER_PAGE, page*PER_PAGE);
+  document.getElementById('resultsInfo').textContent = total ? `Showing ${(page-1)*PER_PAGE+1}–${Math.min(page*PER_PAGE,total)} of ${total} document${total!==1?'s':''}` : '';
+  if (!slice.length) {
+    document.getElementById('docList').innerHTML = '<div class="empty">No documents match your search.</div>';
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+  document.getElementById('docList').innerHTML = slice.map(item => {
+    const href = item.file || item.url || '#';
+    const ext = (item.file||'').split('.').pop().toUpperCase() || 'PDF';
+    return `<a class="doc-card" href="${href}" ${href.startsWith('http')?'target="_blank"':'download'}>
+      <div class="doc-pdf">${ext}</div>
+      <div class="doc-body">
+        <div class="doc-meta">
+          <span class="doc-tag">Report</span>
+          <span class="doc-year">${formatDate(item.date)}</span>
+        </div>
+        <div class="doc-title">${item.title}</div>
+        ${item.desc ? `<div class="doc-desc">${item.desc}</div>` : ''}
+      </div>
+      <div class="doc-dl">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+    </a>`;
+  }).join('');
+  renderPagination(pages);
+}
+function renderPagination(pages) {
+  if (pages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = `<button class="pg-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  for (let i=1; i<=pages; i++) {
+    if (i===1||i===pages||Math.abs(i-page)<=1) html+=`<button class="pg-btn${i===page?' active':''}" onclick="goPage(${i})">${i}</button>`;
+    else if (Math.abs(i-page)===2) html+=`<span class="pg-info">…</span>`;
+  }
+  html+=`<button class="pg-btn" onclick="goPage(${page+1})" ${page===pages?'disabled':''}>›</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+function goPage(p) { page = p; applyFilters(); window.scrollTo({top:200,behavior:'smooth'}); }
+document.getElementById('searchInput').addEventListener('input',e=>{search=e.target.value.trim();page=1;applyFilters()});
+document.getElementById('sortSel').addEventListener('change',e=>{sort=e.target.value;page=1;applyFilters()});
+document.querySelector('.ftab').addEventListener('click',()=>{activeYear='all';page=1;applyFilters();setActiveYear()});
+(async()=>{
+  const data = await loadData();
+  allItems = data.filter(i=>i.type==='reports');
+  document.getElementById('totalCount').textContent = allItems.length;
+  buildYearTabs(allItems);
+  applyFilters();
+})();
+</script>
+</body>
+</html>
