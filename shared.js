@@ -14,7 +14,7 @@ async function loadData() {
     } catch (_) { /* try next */ }
   }
   // File not found — surface a clear message rather than showing fake data
-  console.error('[KIX Repository] Could not load repository.txt from root or data/ folder.');
+  console.error('[KIX Repository] Could not load repository.txt from root or data/ folder.'); 
   document.dispatchEvent(new CustomEvent('repoLoadError'));
   return [];
 }
