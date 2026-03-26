@@ -27,6 +27,35 @@ $action = trim($_GET['action'] ?? '');
 $method = $_SERVER['REQUEST_METHOD'];
 
 // ──────────────────────────────────────────────────
+// GET ?action=ping  →  self-test: confirms PHP is running
+//                      and checks read/write permissions
+// ──────────────────────────────────────────────────
+if ($method === 'GET' && $action === 'ping') {
+    $homeExists  = is_dir(HOME_DIR);
+    $homeWrite   = is_writable(HOME_DIR);
+    $repoExists  = file_exists(REPO_FILE);
+    $repoRead    = $repoExists && is_readable(REPO_FILE);
+    $repoWrite   = $repoExists ? is_writable(REPO_FILE) : $homeWrite;
+    $dataDir     = dirname(REPO_FILE);
+    $dataDirExists = is_dir($dataDir);
+    $dataDirWrite  = $dataDirExists && is_writable($dataDir);
+
+    echo json_encode([
+        'ok'          => true,
+        'php'         => PHP_VERSION,
+        'home_dir'    => HOME_DIR,
+        'home_exists' => $homeExists,
+        'home_write'  => $homeWrite,
+        'data_dir_exists' => $dataDirExists,
+        'data_dir_write'  => $dataDirWrite,
+        'repo_exists' => $repoExists,
+        'repo_read'   => $repoRead,
+        'repo_write'  => $repoWrite,
+    ]);
+    exit;
+}
+
+// ──────────────────────────────────────────────────
 // GET ?action=load  →  return repository.txt content
 // ──────────────────────────────────────────────────
 if ($method === 'GET' && $action === 'load') {

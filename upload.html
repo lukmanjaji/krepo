@@ -118,7 +118,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="panel">
       <div class="p-title">Add New Item</div>
       <div class="p-sub">Fill in the details and upload your file. Download the updated <code>repository.txt</code> when done and replace the one on your server.</div>
-      <div id="loadStatus" style="font-size:.78rem;padding:7px 12px;border-radius:6px;background:#f0f0f0;color:#888;margin-bottom:18px">Loading existing entries from repository.txt…</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:18px">
+        <div id="loadStatus" style="font-size:.78rem;padding:7px 12px;border-radius:6px;background:#f0f0f0;color:#888;flex:1;line-height:1.5">Loading existing entries from repository.txt…</div>
+        <button onclick="runDiag()" title="Run diagnostics" style="flex-shrink:0;padding:7px 11px;border:1.5px solid var(--bdr);border-radius:6px;background:#fff;font-size:.75rem;cursor:pointer;color:var(--gray);white-space:nowrap">🔍 Diagnose</button>
+      </div>
 
       <div class="fg">
         <label class="lbl">Content Type <span class="req">*</span></label>
@@ -334,27 +337,123 @@ function setStatus(msg, type) {
   el.style.color = color;
 }
 
+/* ── DIAGNOSTICS: ping save.php and report exactly what's wrong ── */
+async function runDiag() {
+  setStatus('Running diagnostics…', 'loading');
+  const lines = [];
+  lines.push('URL: ' + window.location.href);
+  lines.push('save.php path: ' + new URL(PHP, window.location.href).href);
+
+  if (window.location.protocol === 'file:') {
+    setStatus('✗ You are opening this page via file:// — it must be served over http:// from a web server. PHP cannot run from a local file.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(PHP + '?action=ping&t=' + Date.now());
+    if (!res.ok) {
+      setStatus('✗ save.php returned HTTP ' + res.status + '. Make sure save.php is uploaded to the same folder as upload.html.', 'error');
+      return;
+    }
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('json')) {
+      const txt = await res.text();
+      setStatus('✗ save.php is not returning JSON — PHP may not be enabled on this server. Server returned: ' + txt.slice(0, 120), 'error');
+      return;
+    }
+    const d = await res.json();
+    const issues = [];
+    if (!d.home_exists)       issues.push('home/ folder missing — create it');
+    if (!d.home_write)        issues.push('home/ not writable — run: chmod 755 home/');
+    if (!d.data_dir_exists)   issues.push('home/data/ missing — will be auto-created on first save');
+    if (d.data_dir_exists && !d.data_dir_write) issues.push('home/data/ not writable — run: chmod 755 home/data/');
+    if (d.repo_exists && !d.repo_read)  issues.push('repository.txt not readable — run: chmod 644 home/data/repository.txt');
+    if (d.repo_exists && !d.repo_write) issues.push('repository.txt not writable — run: chmod 644 home/data/repository.txt');
+
+    if (issues.length) {
+      setStatus('⚠ PHP ' + d.php + ' OK, but: ' + issues.join(' | '), 'warn');
+    } else {
+      setStatus('✓ PHP ' + d.php + ' running | home/ writable | ' + (d.repo_exists ? 'repository.txt found' : 'repository.txt will be created on first save'), 'ok');
+      // All good — reload entries
+      await loadLive();
+    }
+  } catch (err) {
+    setStatus('✗ Cannot reach save.php at all. Check the file exists on the server and PHP is enabled. Error: ' + err.message, 'error');
+  }
+}
+
 /* ── LOAD: fetch live repository.txt via save.php ── */
 async function loadLive() {
   setStatus('Loading repository.txt…', 'loading');
+
+  // ── Step 1: check save.php is reachable at all ──
+  let phpOk = false;
   try {
-    const res = await fetch(PHP + '?action=load&t=' + Date.now());
-    const json = await res.json();
-    if (json.ok && json.content.trim()) {
-      entries = parseTxt(json.content);
-      setStatus('✓ Loaded ' + entries.length + ' existing entr' + (entries.length === 1 ? 'y' : 'ies') + ' from repository.txt', 'ok');
-    } else if (json.content === '') {
-      entries = [];
-      setStatus('repository.txt is empty — starting fresh.', 'warn');
+    const probe = await fetch(PHP + '?action=load&t=' + Date.now());
+    if (probe.ok) {
+      // Make sure it returned JSON, not an HTML error page
+      const ct = probe.headers.get('content-type') || '';
+      if (ct.includes('json')) {
+        const json = await probe.json();
+        phpOk = true;
+        if (json.ok && json.content && json.content.trim()) {
+          entries = parseTxt(json.content);
+          setStatus('✓ Loaded ' + entries.length + ' entr' + (entries.length === 1 ? 'y' : 'ies') + ' from repository.txt', 'ok');
+          renderDB();
+          return;
+        } else if (json.content === '' || (json.ok && !json.content)) {
+          entries = [];
+          setStatus('repository.txt is empty — starting fresh.', 'warn');
+          renderDB();
+          return;
+        } else {
+          setStatus('⚠ save.php error: ' + (json.error || 'unknown'), 'warn');
+        }
+      } else {
+        // Got HTML back — PHP likely not enabled, or wrong URL
+        const text = await probe.text();
+        console.error('save.php returned non-JSON:', text.slice(0, 300));
+        setStatus('⚠ save.php is not running PHP — got HTML response. Check PHP is enabled on your server.', 'error');
+      }
     } else {
-      entries = [];
-      setStatus('⚠ ' + (json.error || 'Could not load repository.txt'), 'warn');
+      setStatus('⚠ save.php returned HTTP ' + probe.status + ' — file may not be uploaded to the server yet.', 'error');
     }
   } catch (err) {
-    entries = [];
-    setStatus('⚠ Cannot reach save.php — is this running on a web server with PHP?', 'error');
-    console.error('loadLive error:', err);
+    console.error('save.php fetch error:', err);
   }
+
+  // ── Step 2: PHP failed — try fetching repository.txt directly as fallback ──
+  if (!phpOk) {
+    setStatus('Trying direct fetch of repository.txt as fallback…', 'loading');
+    for (const path of ['home/data/repository.txt', 'repository.txt', 'data/repository.txt']) {
+      try {
+        const res = await fetch(path + '?t=' + Date.now());
+        if (res.ok) {
+          const txt = await res.text();
+          if (txt.trim() && !txt.trim().startsWith('<')) {
+            entries = parseTxt(txt);
+            setStatus(
+              '⚠ PHP unavailable — loaded ' + entries.length + ' entries directly from ' + path + '. ' +
+              'Saves and uploads will NOT work until PHP is enabled.',
+              'warn'
+            );
+            renderDB();
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+    // Nothing worked at all
+    entries = [];
+    const url = window.location.href;
+    const isFile = url.startsWith('file://');
+    if (isFile) {
+      setStatus('✗ Page opened via file:// — must be served from a web server (Apache/Nginx). Open via http:// instead.', 'error');
+    } else {
+      setStatus('✗ Cannot reach save.php. Check: (1) PHP is enabled on server, (2) save.php is uploaded to the same folder as upload.html, (3) folder permissions allow PHP to read/write.', 'error');
+    }
+  }
+
   renderDB();
 }
 
