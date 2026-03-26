@@ -579,11 +579,39 @@ function renderDB() {
 }
 
 async function delEntry(i) {
-  if (!confirm(`Remove "${entries[i].title}"?`)) return;
+  const entry = entries[i];
+  if (!confirm(`Remove "${entry.title}"?\nThis will also delete any uploaded files from the server.`)) return;
+
+  // Collect all file paths belonging to this entry (skip YouTube URLs)
+  const paths = [];
+  if (entry.file)       paths.push(entry.file);
+  if (entry.albumcover) paths.push(entry.albumcover);
+  if (entry.photos && entry.photos.length) paths.push(...entry.photos);
+  // entry.thumb may be a YouTube auto-URL — skip http(s) paths
+  if (entry.thumb && !entry.thumb.startsWith('http')) paths.push(entry.thumb);
+
+  // Delete files from server
+  if (paths.length) {
+    try {
+      const res = await fetch(PHP + '?action=delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths })
+      });
+      const json = await res.json();
+      if (json.failed && json.failed.length) {
+        console.warn('Some files could not be deleted:', json.failed);
+      }
+    } catch (err) {
+      console.error('Delete files error:', err);
+    }
+  }
+
+  // Remove entry and save updated repository.txt
   entries.splice(i, 1);
   renderDB();
   await saveLive();
-  showToast('Entry removed and repository.txt updated.');
+  showToast(`"${entry.title.slice(0,36)}${entry.title.length>36?'…':''}" removed${paths.length ? ' and ' + paths.length + ' file' + (paths.length===1?'':'s') + ' deleted' : ''}.`);
 }
 
 /* ── Manual export (backup) ── */

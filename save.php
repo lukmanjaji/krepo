@@ -9,9 +9,10 @@
  * All responses: { "ok": true/false, ... }
  */
 
-// ── Paths always relative to this file, regardless of how URL is called ──
-define('REPO_FILE',   __DIR__ . DIRECTORY_SEPARATOR . 'repository.txt');
-define('UPLOAD_ROOT', __DIR__ . DIRECTORY_SEPARATOR);
+// ── All data/media lives in ./home/ relative to this file ──
+define('HOME_DIR',    __DIR__ . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR);
+define('REPO_FILE',   HOME_DIR . 'data' . DIRECTORY_SEPARATOR . 'repository.txt');
+define('UPLOAD_ROOT', HOME_DIR);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -53,6 +54,13 @@ if ($method === 'POST' && $action === 'save') {
         echo json_encode(['ok' => false, 'error' => 'Empty body — nothing saved.']);
         exit;
     }
+    // Ensure home/data/ directory exists
+    $dataDir = dirname(REPO_FILE);
+    if (!is_dir($dataDir) && !mkdir($dataDir, 0755, true)) {
+        echo json_encode(['ok' => false, 'error' => 'Cannot create data directory: ' . $dataDir]);
+        exit;
+    }
+
     // Atomic write: temp file then rename so we never corrupt the live file
     $tmp = REPO_FILE . '.tmp';
     if (file_put_contents($tmp, $body, LOCK_EX) === false) {
@@ -120,6 +128,20 @@ if ($method === 'POST' && $action === 'upload') {
         exit;
     }
 
+    // ── Append unique 6-char alphanumeric suffix before the extension ──
+    // e.g. "report.pdf" → "report_a3kX9z.pdf"
+    $pathInfo  = pathinfo($dest);
+    $dir_part  = $pathInfo['dirname'] !== '.' ? $pathInfo['dirname'] . '/' : '';
+    $baseName  = $pathInfo['filename'];
+    $extension = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
+    $chars     = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $suffix    = '';
+    for ($i = 0; $i < 6; $i++) {
+        $suffix .= $chars[random_int(0, strlen($chars) - 1)];
+    }
+    $uniqueName = $baseName . '_' . $suffix . $extension;
+    $dest       = $dir_part . $uniqueName;
+
     $fullDest = UPLOAD_ROOT . $dest;
     $dir      = dirname($fullDest);
 
@@ -139,6 +161,73 @@ if ($method === 'POST' && $action === 'upload') {
     }
 
     echo json_encode(['ok' => true, 'path' => $dest, 'size' => $_FILES['file']['size']]);
+    exit;
+}
+
+// ──────────────────────────────────────────────────
+// POST ?action=delete  →  delete one or more files
+//
+// JSON body: { "paths": ["home/docs/reports/file_abc123.pdf", ...] }
+// Only deletes files inside HOME_DIR. Ignores http:// URLs.
+// ──────────────────────────────────────────────────
+if ($method === 'POST' && $action === 'delete') {
+    $body = file_get_contents('php://input');
+    $data = json_decode($body, true);
+
+    if (!isset($data['paths']) || !is_array($data['paths'])) {
+        echo json_encode(['ok' => false, 'error' => 'No paths array in request body.']);
+        exit;
+    }
+
+    $deleted = [];
+    $failed  = [];
+    $skipped = [];
+
+    foreach ($data['paths'] as $rawPath) {
+        $rawPath = trim($rawPath);
+
+        // Skip empty, URLs, or anything that looks like a URL
+        if ($rawPath === '' || preg_match('#^https?://#i', $rawPath)) {
+            $skipped[] = $rawPath;
+            continue;
+        }
+
+        // Sanitise — strip path traversal
+        $safePath = str_replace('\', '/', $rawPath);
+        $safePath = preg_replace('/\.\.+/', '', $safePath);
+        $safePath = preg_replace('/\/+/', '/', $safePath);
+        $safePath = ltrim($safePath, '/');
+
+        $fullPath = UPLOAD_ROOT . $safePath;
+
+        // Security: must still be inside HOME_DIR after resolution
+        $realHome = realpath(HOME_DIR);
+        $realFile = realpath($fullPath);
+
+        if ($realFile === false) {
+            // File doesn't exist — treat as already deleted
+            $skipped[] = $rawPath;
+            continue;
+        }
+
+        if (strpos($realFile, $realHome) !== 0) {
+            $failed[] = $rawPath . ' (outside allowed directory)';
+            continue;
+        }
+
+        if (unlink($fullPath)) {
+            $deleted[] = $rawPath;
+        } else {
+            $failed[] = $rawPath . ' (unlink failed — check permissions)';
+        }
+    }
+
+    echo json_encode([
+        'ok'      => count($failed) === 0,
+        'deleted' => $deleted,
+        'skipped' => $skipped,
+        'failed'  => $failed,
+    ]);
     exit;
 }
 
