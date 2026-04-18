@@ -1,7 +1,7 @@
 // ── SHARED UTILITIES ──
 
 // Load repository.txt exclusively via save.php so there is one canonical path.
-// save.php reads from home/data/repository.txt — always the same file that gets written.
+// save.php reads from data/repository.txt — always the same file that gets written.
 async function loadData() {
   try {
     const res = await fetch('save.php?action=load&t=' + Date.now());
@@ -18,14 +18,14 @@ async function loadData() {
   // Last-resort: direct fetch of the canonical path only — never root
   // (handles static hosting without PHP)
   try {
-    const res = await fetch('home/data/repository.txt?t=' + Date.now());
+    const res = await fetch('data/repository.txt?t=' + Date.now());
     if (res.ok) {
       const text = await res.text();
       if (text.trim() && !text.trim().startsWith('<')) return parseDB(text);
     }
   } catch (_) {}
 
-  console.error('[KIX Repository] Could not load repository.txt via save.php or home/data/repository.txt.');
+  console.error('[KIX Repository] Could not load repository.txt via save.php or data/repository.txt.');
   document.dispatchEvent(new CustomEvent('repoLoadError'));
   return [];
 }

@@ -188,7 +188,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fg">
           <label class="lbl">Destination Folder</label>
-          <div class="folder-disp" id="folderDisp">home/docs/reports/</div>
+          <div class="folder-disp" id="folderDisp">docs/reports/</div>
         </div>
       </div>
 
@@ -218,7 +218,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fg">
           <label class="lbl">Album Folder Name</label>
           <input type="text" id="albumFolder" placeholder="e.g. symposium-2025 (no spaces)"/>
-          <div style="font-size:.72rem;color:var(--gray);margin-top:5px">Photos will go in <code>home/photos/<span id="folderPreview">your-folder-name</span>/</code></div>
+          <div style="font-size:.72rem;color:var(--gray);margin-top:5px">Photos will go in <code>photos/<span id="folderPreview">your-folder-name</span>/</code></div>
         </div>
       </div>
 
@@ -265,23 +265,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="fi">📄 upload.html</div>
           <div class="fi">📄 save.php</div>
           <div class="fi">📄 shared.js</div>
-          <div class="fd">📂 home/</div>
+          <div class="fd">📂 data/</div>
+          <div style="padding-left:14px"><div class="fi">📄 repository.txt</div></div>
+          <div class="fd">📂 docs/</div>
           <div style="padding-left:14px">
-            <div class="fd">📂 data/</div>
-            <div style="padding-left:14px"><div class="fi">📄 repository.txt</div></div>
-            <div class="fd">📂 docs/</div>
-            <div style="padding-left:14px">
-              <div class="fd">📂 reports/</div>
-              <div class="fd">📂 research/</div>
-              <div class="fd">📂 policy/</div>
-            </div>
-            <div class="fd">📂 photos/</div>
-            <div style="padding-left:14px">
-              <div class="fi">📂 symposium-2025/</div>
-              <div class="fi">📂 dakar-meeting/</div>
-            </div>
-            <div class="fd">📂 videos/</div>
+            <div class="fd">📂 reports/</div>
+            <div class="fd">📂 research/</div>
+            <div class="fd">📂 policy/</div>
           </div>
+          <div class="fd">📂 photos/</div>
+          <div style="padding-left:14px">
+            <div class="fi">📂 symposium-2025/</div>
+            <div class="fi">📂 dakar-meeting/</div>
+          </div>
+          <div class="fd">📂 videos/</div>
         </div>
       </div>
     </div>
@@ -385,12 +382,12 @@ async function runDiag() {
     }
     const d = await res.json();
     const issues = [];
-    if (!d.home_exists)       issues.push('home/ folder missing — create it');
-    if (!d.home_write)        issues.push('home/ not writable — run: chmod 755 home/');
-    if (!d.data_dir_exists)   issues.push('home/data/ missing — will be auto-created on first save');
-    if (d.data_dir_exists && !d.data_dir_write) issues.push('home/data/ not writable — run: chmod 755 home/data/');
-    if (d.repo_exists && !d.repo_read)  issues.push('repository.txt not readable — run: chmod 644 home/data/repository.txt');
-    if (d.repo_exists && !d.repo_write) issues.push('repository.txt not writable — run: chmod 644 home/data/repository.txt');
+    if (!d.home_exists)       issues.push('Root folder not accessible — check permissions');
+    if (!d.home_write)        issues.push('Root folder not writable — run: chmod 755 on the repository folder');
+    if (!d.data_dir_exists)   issues.push('data/ missing — will be auto-created on first save');
+    if (d.data_dir_exists && !d.data_dir_write) issues.push('data/ not writable — run: chmod 755 data/');
+    if (d.repo_exists && !d.repo_read)  issues.push('repository.txt not readable — run: chmod 644 data/repository.txt');
+    if (d.repo_exists && !d.repo_write) issues.push('repository.txt not writable — run: chmod 644 data/repository.txt');
 
     if (issues.length) {
       setStatus('⚠ PHP ' + d.php + ' OK, but: ' + issues.join(' | '), 'warn');
@@ -447,7 +444,7 @@ async function loadLive() {
   // ── Step 2: PHP failed — try fetching repository.txt directly as fallback ──
   if (!phpOk) {
     setStatus('Trying direct fetch of repository.txt as fallback…', 'loading');
-    for (const path of ['home/data/repository.txt']) {  // canonical path only — never root
+    for (const path of ['data/repository.txt']) {  // canonical path only
       try {
         const res = await fetch(path + '?t=' + Date.now());
         if (res.ok) {
@@ -536,7 +533,7 @@ function uploadFile(file, destPath) {
 
 document.getElementById('itemDate').valueAsDate = new Date();
 
-const folderMap = {reports:'home/docs/reports/',research:'home/docs/research/',policy:'home/docs/policy/',photos:'home/photos/',videos:'home/videos/'};
+const folderMap = {reports:'docs/reports/',research:'docs/research/',policy:'docs/policy/',photos:'photos/',videos:'videos/'};
 const acceptMap = {reports:'.pdf,.doc,.docx',research:'.pdf,.doc,.docx',policy:'.pdf,.doc,.docx',photos:'.jpg,.jpeg,.png,.webp,.gif',videos:'.mp4,.mov,.webm'};
 let selType = 'reports', selFile = null, coverFile = null, photoFiles = [];
 
@@ -627,7 +624,7 @@ async function handleSubmit() {
 
   /* ── Upload album cover + photos — use server's returned unique paths ── */
   const albumFolderName = document.getElementById('albumFolder').value.trim() || 'album-' + date.replace(/-/g,'');
-  const albumPath = `home/photos/${albumFolderName}/`;
+  const albumPath = `photos/${albumFolderName}/`;
   let albumCoverPath = '';
 
   if (isAlbum) {

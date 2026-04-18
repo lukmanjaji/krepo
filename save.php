@@ -5,14 +5,14 @@
  * GET  ?action=ping    -> self-test, checks PHP + permissions
  * GET  ?action=load    -> return repository.txt contents as JSON
  * POST ?action=save    -> overwrite repository.txt with request body
- * POST ?action=upload  -> receive a file and save it to home/ folder
- * POST ?action=delete  -> delete one or more files from home/
+ * POST ?action=upload  -> receive a file and save it to docs/ photos/ videos/ folders
+ * POST ?action=delete  -> delete one or more files
  */
 
-// ── All content lives in ./home/ relative to this file ──
-define('HOME_DIR',    __DIR__ . '/home/');
-define('REPO_FILE',   HOME_DIR . 'data/repository.txt');
-define('UPLOAD_ROOT', HOME_DIR);
+// ── All content lives in ./data/ and subfolders relative to this file ──
+define('HOME_DIR',    __DIR__ . '/');
+define('REPO_FILE',   __DIR__ . '/data/repository.txt');
+define('UPLOAD_ROOT', __DIR__ . '/');
 
 // ── Always return JSON, capture any stray PHP errors into the response ──
 ini_set('display_errors', 0);
@@ -39,70 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 $action = isset($_GET['action']) ? trim($_GET['action']) : '';
 $method = $_SERVER['REQUEST_METHOD'];
-
-// ──────────────────────────────────────────────
-// GET ?action=debug  ->  show exact resolved paths and file info
-// REMOVE THIS ENDPOINT AFTER TROUBLESHOOTING
-// ──────────────────────────────────────────────
-if ($method === 'GET' && $action === 'debug') {
-    $repoReal    = realpath(REPO_FILE);
-    $homeReal    = realpath(HOME_DIR);
-    $dirReal     = realpath(__DIR__);
-    $contents    = file_exists(REPO_FILE) ? file_get_contents(REPO_FILE) : null;
-    $size        = file_exists(REPO_FILE) ? filesize(REPO_FILE) : null;
-
-    // Also scan for ANY repository.txt files on the server from this dir upward
-    $found = [];
-    $search_dirs = [
-        __DIR__,
-        dirname(__DIR__),
-        dirname(dirname(__DIR__)),
-    ];
-    foreach ($search_dirs as $dir) {
-        $candidate = $dir . '/repository.txt';
-        if (file_exists($candidate)) {
-            $found[] = [
-                'path'    => $candidate,
-                'real'    => realpath($candidate),
-                'size'    => filesize($candidate),
-                'preview' => substr(file_get_contents($candidate), 0, 200),
-            ];
-        }
-        $candidate2 = $dir . '/data/repository.txt';
-        if (file_exists($candidate2)) {
-            $found[] = [
-                'path'    => $candidate2,
-                'real'    => realpath($candidate2),
-                'size'    => filesize($candidate2),
-                'preview' => substr(file_get_contents($candidate2), 0, 200),
-            ];
-        }
-        $candidate3 = $dir . '/home/data/repository.txt';
-        if (file_exists($candidate3)) {
-            $found[] = [
-                'path'    => $candidate3,
-                'real'    => realpath($candidate3),
-                'size'    => filesize($candidate3),
-                'preview' => substr(file_get_contents($candidate3), 0, 200),
-            ];
-        }
-    }
-
-    echo json_encode([
-        'ok'            => true,
-        '__DIR__'       => __DIR__,
-        '__DIR__real'   => $dirReal,
-        'HOME_DIR'      => HOME_DIR,
-        'HOME_DIR_real' => $homeReal,
-        'REPO_FILE'     => REPO_FILE,
-        'REPO_FILE_real'=> $repoReal,
-        'repo_exists'   => file_exists(REPO_FILE),
-        'repo_size'     => $size,
-        'repo_content'  => $contents,
-        'all_found'     => $found,
-    ], JSON_PRETTY_PRINT);
-    exit;
-}
 
 // ── Helper: sanitise a relative path, strip traversal ──
 function safePath($raw) {
@@ -396,7 +332,7 @@ if ($method === 'GET' && $action === 'verify') {
             'missing' => $missing,
             'present' => $present,
             'ok'      => count($missing) === 0,
-            'no_files'=> count($toCheck) === 0,  // videos / entries with no local files 
+            'no_files'=> count($toCheck) === 0,  // videos / entries with no local files
         ];
     }
 
