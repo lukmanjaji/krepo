@@ -447,7 +447,7 @@ async function loadLive() {
   // ── Step 2: PHP failed — try fetching repository.txt directly as fallback ──
   if (!phpOk) {
     setStatus('Trying direct fetch of repository.txt as fallback…', 'loading');
-    for (const path of ['home/data/repository.txt', 'repository.txt', 'data/repository.txt']) {
+    for (const path of ['home/data/repository.txt']) {  // canonical path only — never root
       try {
         const res = await fetch(path + '?t=' + Date.now());
         if (res.ok) {
