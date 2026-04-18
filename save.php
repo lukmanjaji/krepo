@@ -396,7 +396,7 @@ if ($method === 'GET' && $action === 'verify') {
             'missing' => $missing,
             'present' => $present,
             'ok'      => count($missing) === 0,
-            'no_files'=> count($toCheck) === 0,  // videos / entries with no local files
+            'no_files'=> count($toCheck) === 0,  // videos / entries with no local files 
         ];
     }
 
