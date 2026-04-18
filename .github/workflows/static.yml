@@ -17,3 +17,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+    - name: Copy files
+      run:  cp -r /home/kixrepository/_work/krepo/krepo/*.html  /home/krepo/
+    - name: Copy save
+      run:  cp -r /home/kixrepository/_work/krepo/krepo/save.php  /home/krepo/
+    - name: Copy JS
+      run:  cp -r /home/kixrepository/_work/krepo/krepo/shared.js  /home/krepo/
