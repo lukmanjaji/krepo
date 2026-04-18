@@ -97,6 +97,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .btn-exp:hover{background:var(--gm);border-color:var(--gm)}
 .btn-cpy{background:#fff;color:var(--g);border-color:var(--bdr)}
 .btn-cpy:hover{border-color:var(--gm)}
+.verify-panel{margin-top:12px;border-radius:10px;overflow:hidden;border:1.5px solid var(--bdr)}
+.verify-hdr{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;font-size:.82rem;font-weight:700}
+.verify-hdr.ok{background:#e8f4ee;color:var(--g)}
+.verify-hdr.warn{background:#fff3e0;color:#b45309}
+.verify-hdr.err{background:#ffebee;color:var(--red)}
+.verify-hdr.running{background:#e3f2fd;color:#1565c0}
+.verify-item{padding:10px 16px;border-top:1px solid var(--bdr);font-size:.78rem;display:flex;flex-direction:column;gap:4px}
+.verify-item.broken{background:#fff8f8}
+.verify-item.ok{background:#f9fdf9}
+.verify-item-title{font-weight:600;color:var(--char);display:flex;align-items:center;gap:7px}
+.verify-item-files{color:var(--red);font-size:.72rem;padding-left:18px;line-height:1.6}
+.verify-item-ok{color:var(--gm);font-size:.72rem}
+.db-item.broken-entry{background:#fff3f3;border-left:3px solid var(--red)}
+.db-item.broken-entry .db-ttl{color:var(--red)}
+.btn-verify{flex:1;padding:9px;font-size:.76rem;font-weight:600;border-radius:6px;cursor:pointer;
+  border:1.5px solid #e65100;background:#fff3e0;color:#b45309;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-verify:hover{background:#ffe0b2;border-color:#bf360c}
 .toast{position:fixed;bottom:26px;right:26px;background:var(--g);color:#fff;padding:13px 20px;border-radius:8px;font-size:.86rem;font-weight:500;box-shadow:0 6px 24px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);max-width:320px;z-index:500}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.err{background:var(--red)}
@@ -279,6 +296,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button class="btn-exp" onclick="exportTxt()">⬇ Download .txt</button>
         <button class="btn-cpy" onclick="copyTxt()">Copy</button>
       </div>
+      <div style="padding:0 16px 12px">
+        <button class="btn-verify" style="width:100%" onclick="runVerify()">🔍 Verify Files on Server</button>
+      </div>
+      <div id="verifyPanel"></div>
     </div>
   </div>
 </div>
@@ -294,7 +315,8 @@ function parseTxt(text) {
   const items = [];
   text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach(block => {
     const obj = {};
-    block.split('\n').forEach(line => {
+    block.split('\n').forEach(rawLine => {
+      const line = rawLine.replace(/\r/g, '');  // handle Windows CRLF
       const idx = line.indexOf(':');
       if (idx === -1) return;
       const key = line.slice(0, idx).trim().toLowerCase();
@@ -481,13 +503,35 @@ async function saveLive() {
   }
 }
 
-/* ── UPLOAD: send a single file to its folder via save.php ── */
-async function uploadFile(file, destPath) {
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('dest', destPath);
-  const res = await fetch(PHP + '?action=upload', { method: 'POST', body: fd });
-  return await res.json();
+/* ── UPLOAD: XHR with progress bar so large files don't appear stuck ── */
+function uploadFile(file, destPath) {
+  return new Promise((resolve) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('dest', destPath);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', PHP + '?action=upload');
+    xhr.timeout = 300000; // 5 minutes
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        const mb  = (e.loaded / 1048576).toFixed(1);
+        const tot = (e.total  / 1048576).toFixed(1);
+        setStatus(`Uploading ${file.name}: ${pct}% (${mb} / ${tot} MB)…`, 'saving');
+      }
+    };
+    xhr.onload = () => {
+      try {
+        resolve(JSON.parse(xhr.responseText));
+      } catch(e) {
+        resolve({ ok: false, error: 'Server response was not JSON: ' + xhr.responseText.slice(0, 200) });
+      }
+    };
+    xhr.onerror   = () => resolve({ ok: false, error: 'Network error during upload' });
+    xhr.ontimeout = () => resolve({ ok: false, error: 'Upload timed out (file may be too large for server limits)' });
+    xhr.send(fd);
+  });
 }
 
 document.getElementById('itemDate').valueAsDate = new Date();
@@ -567,7 +611,8 @@ async function handleSubmit() {
 
   btn.disabled = true;
   btn.textContent = 'Saving…';
-  setStatus('Uploading files…', 'saving');
+  if (!isVideo) setStatus('Uploading files…', 'saving');
+  else setStatus('Saving entry…', 'saving');
 
   let filePath = '';
   const uploadErrors = [];
@@ -726,6 +771,140 @@ function exportTxt() {
 function copyTxt() {
   if (!entries.length) { showToast('No entries to copy.', true); return; }
   navigator.clipboard.writeText(toTxt()).then(() => showToast('Copied ' + entries.length + ' entries to clipboard.'));
+}
+
+/* ── VERIFY FILES ── */
+async function runVerify() {
+  const panel = document.getElementById('verifyPanel');
+  const btn   = document.querySelector('.btn-verify');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+
+  panel.innerHTML = '<div class="verify-hdr running">🔄 Checking all files on server…</div>';
+
+  try {
+    const res  = await fetch(PHP + '?action=verify&t=' + Date.now());
+    const data = await res.json();
+
+    if (!data.ok) {
+      panel.innerHTML = `<div class="verify-hdr err">✗ ${data.error || 'Verify failed'}</div>`;
+      btn.disabled = false; btn.textContent = '🔍 Verify Files on Server';
+      return;
+    }
+
+    const broken  = data.entries.filter(e => !e.ok && !e.no_files);
+    const noFiles = data.entries.filter(e => e.no_files);
+    const good    = data.entries.filter(e => e.ok);
+
+    // Build result panel
+    let html = '';
+    if (broken.length === 0) {
+      html += `<div class="verify-hdr ok">✓ All ${data.total} entries verified — no missing files</div>`;
+    } else {
+      html += `<div class="verify-hdr warn">⚠ ${broken.length} entr${broken.length===1?'y':'ies'} have missing files (${data.total} total checked)</div>`;
+    }
+
+    // Show broken entries
+    broken.forEach(e => {
+      html += `<div class="verify-item broken">
+        <div class="verify-item-title">
+          <span style="color:var(--red)">✗</span>
+          <span>${e.title}</span>
+          <span style="font-size:.66rem;font-weight:400;color:#999">${e.type} · ${e.date}</span>
+        </div>
+        <div class="verify-item-files">Missing:<br>${e.missing.map(f=>'&nbsp;&nbsp;• '+f).join('<br>')}</div>
+        <div style="margin-top:4px">
+          <button onclick="removeOrphan(${JSON.stringify(e.title).replace(/'/g,"\'")})"
+            style="font-size:.7rem;padding:3px 10px;border-radius:4px;background:var(--red);
+                   color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">
+            Remove entry
+          </button>
+        </div>
+      </div>`;
+    });
+
+    // Summary of good entries (collapsed)
+    if (good.length > 0) {
+      html += `<div class="verify-item ok">
+        <div class="verify-item-title"><span style="color:var(--gm)">✓</span>
+          <span>${good.length} entr${good.length===1?'y':'ies'} OK</span></div>
+      </div>`;
+    }
+    if (noFiles.length > 0) {
+      html += `<div class="verify-item" style="background:#f7f7f7">
+        <div class="verify-item-title"><span>—</span>
+          <span style="color:#888">${noFiles.length} video/URL entr${noFiles.length===1?'y':'ies'} (no local files to check)</span></div>
+      </div>`;
+    }
+
+    // Auto-highlight broken entries in sidebar
+    highlightBrokenEntries(broken.map(e => e.title));
+
+    panel.innerHTML = html;
+
+    // If broken entries found, offer to remove all at once
+    if (broken.length > 0) {
+      const removeAllBtn = document.createElement('div');
+      removeAllBtn.style.cssText = 'padding:10px 16px;border-top:1px solid var(--bdr)';
+      removeAllBtn.innerHTML = `<button onclick="removeAllOrphans()"
+        style="width:100%;padding:9px;font-size:.78rem;font-weight:700;border-radius:6px;
+               background:var(--red);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">
+        🗑 Remove all ${broken.length} broken entr${broken.length===1?'y':'ies'} from repository.txt
+      </button>`;
+      panel.appendChild(removeAllBtn);
+    }
+
+  } catch (err) {
+    panel.innerHTML = `<div class="verify-hdr err">✗ Could not reach save.php: ${err.message}</div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔍 Verify Files on Server';
+}
+
+function highlightBrokenEntries(brokenTitles) {
+  document.querySelectorAll('.db-item').forEach(el => {
+    const titleEl = el.querySelector('.db-ttl');
+    if (titleEl && brokenTitles.includes(titleEl.textContent)) {
+      el.classList.add('broken-entry');
+    } else {
+      el.classList.remove('broken-entry');
+    }
+  });
+}
+
+function removeOrphan(title) {
+  const idx = entries.findIndex(e => e.title === title);
+  if (idx === -1) { showToast('Entry not found: ' + title, true); return; }
+  if (!confirm('Remove "' + title + '" from repository.txt?\nThe file is already missing from the server.')) return;
+  entries.splice(idx, 1);
+  renderDB();
+  saveLive().then(() => {
+    showToast('"' + title.slice(0,36) + (title.length>36?'…':'') + '" removed from repository.txt');
+    runVerify(); // re-run to refresh panel
+  });
+}
+
+async function removeAllOrphans() {
+  try {
+    const res  = await fetch(PHP + '?action=verify&t=' + Date.now());
+    const data = await res.json();
+    const broken = data.entries.filter(e => !e.ok && !e.no_files);
+    if (broken.length === 0) { showToast('No broken entries found.'); return; }
+    if (!confirm(`Remove all ${broken.length} broken entr${broken.length===1?'y':'ies'} from repository.txt?\nTheir files are already missing from the server.`)) return;
+
+    const titles = broken.map(e => e.title);
+    entries = entries.filter(e => !titles.includes(e.title));
+    renderDB();
+    const saved = await saveLive();
+    if (saved) {
+      showToast(`✓ Removed ${broken.length} broken entr${broken.length===1?'y':'ies'} and updated repository.txt`);
+      document.getElementById('verifyPanel').innerHTML =
+        '<div class="verify-hdr ok">✓ All broken entries removed. Run verify again to confirm.</div>';
+    }
+  } catch(err) {
+    showToast('Error: ' + err.message, true);
+  }
 }
 
 function showToast(msg, err = false) {

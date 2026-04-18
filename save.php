@@ -268,6 +268,84 @@ if ($method === 'POST' && $action === 'delete') {
     exit;
 }
 
+// ──────────────────────────────────────────────
+// GET ?action=verify  ->  check which files in repository.txt actually exist
+// Returns per-entry status: which files are missing vs present
+// ──────────────────────────────────────────────
+if ($method === 'GET' && $action === 'verify') {
+    if (!file_exists(REPO_FILE)) {
+        echo json_encode(['ok' => true, 'entries' => [], 'note' => 'repository.txt not found']);
+        exit;
+    }
+
+    $content = file_get_contents(REPO_FILE);
+    $blocks  = preg_split('/\n\s*\n/', trim($content));
+    $results = [];
+
+    foreach ($blocks as $block) {
+        $block = trim($block);
+        if (!$block) continue;
+
+        $entry  = [];
+        $files  = [];   // all file paths referenced by this entry
+        $photos = [];
+
+        foreach (explode("\n", $block) as $line) {
+            $line = trim($line);
+            if (!$line) continue;
+            $idx = strpos($line, ':');
+            if ($idx === false) continue;
+            $key = strtolower(trim(substr($line, 0, $idx)));
+            $val = trim(substr($line, $idx + 1));
+            if ($key === 'photo') {
+                $photos[] = $val;
+            } else {
+                $entry[$key] = $val;
+            }
+        }
+        if (!empty($photos)) $entry['photos'] = $photos;
+
+        if (empty($entry['title']) || empty($entry['type'])) continue;
+
+        // Collect all file paths for this entry (skip http URLs)
+        $toCheck = [];
+        if (!empty($entry['file']))       $toCheck[] = $entry['file'];
+        if (!empty($entry['albumcover'])) $toCheck[] = $entry['albumcover'];
+        if (!empty($entry['photos']))     $toCheck   = array_merge($toCheck, $entry['photos']);
+
+        $missing = [];
+        $present = [];
+        foreach ($toCheck as $path) {
+            if (preg_match('#^https?://#i', $path)) continue; // skip URLs
+            $full = UPLOAD_ROOT . ltrim(preg_replace('#\.\.\.+#', '', str_replace('\\', '/', $path)), '/');
+            if (file_exists($full)) {
+                $present[] = $path;
+            } else {
+                $missing[] = $path;
+            }
+        }
+
+        $results[] = [
+            'title'   => $entry['title'],
+            'type'    => $entry['type'],
+            'date'    => $entry['date'] ?? '',
+            'missing' => $missing,
+            'present' => $present,
+            'ok'      => count($missing) === 0,
+            'no_files'=> count($toCheck) === 0,  // videos / entries with no local files
+        ];
+    }
+
+    $broken = array_filter($results, fn($r) => !$r['ok'] && !$r['no_files']);
+    echo json_encode([
+        'ok'          => true,
+        'total'       => count($results),
+        'broken'      => count($broken),
+        'entries'     => $results,
+    ]);
+    exit;
+}
+
 // Catch-all
 http_response_code(400);
 echo json_encode(['ok' => false, 'error' => 'Unknown action "' . htmlspecialchars($action) . '" or wrong HTTP method']);
